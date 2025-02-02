@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -8,14 +8,9 @@ function AssignmentDetail() {
   const [assignment, setAssignment] = useState(null);
   const [submission, setSubmission] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const userRole = localStorage.getItem('userRole');
 
-  useEffect(() => {
-    fetchAssignment();
-  }, [id]);
-
-  const fetchAssignment = async () => {
+  const fetchAssignment = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`http://localhost:5000/api/assignments/${id}`, {
@@ -27,10 +22,13 @@ function AssignmentDetail() {
       }
       setLoading(false);
     } catch (err) {
-      setError('Failed to fetch assignment');
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchAssignment();
+  }, [fetchAssignment]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +43,7 @@ function AssignmentDetail() {
       );
       navigate('/assignments');
     } catch (err) {
-      setError('Failed to submit assignment');
+      
     }
   };
 

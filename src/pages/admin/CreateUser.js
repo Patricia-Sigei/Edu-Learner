@@ -105,9 +105,9 @@ function CreateUser() {
                     value={formData.role}
                     onChange={handleChange}
                   >
-                    <option value="STUDENT">Student</option>
-                    <option value="INSTRUCTOR">Instructor</option>
-                    <option value="ADMIN">Admin</option>
+                    <option value="STUDENT">STUDENT</option>
+                    <option value="INSTRUCTOR">INSTRUCTOR</option>
+                    <option value="ADMIN">ADMIN</option>
                   </select>
                 </div>
 

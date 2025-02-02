@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Login from './pages/auth/Login';
 import UserManagement from './pages/admin/UserManagement';
@@ -13,56 +14,144 @@ import AssignmentDetail from './pages/assignments/AssignmentDetail';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
-function App() {
+// Protected Route Component
+function ProtectedRoute({ children, allowedRoles = [] }) {
+  const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+// Layout Component
+function Layout() {
+  return (
+    <div className="App">
+      <Navbar />
+      <Outlet />
+    </div>
+  );
+}
+
+function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const userRole = localStorage.getItem('userRole');
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Router>
-      <div className="App">
-        <Navbar />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          
+      <Routes>
+        {/* Public Route */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected Routes */}
+        <Route element={<Layout />}>
           {/* Admin Routes */}
-          <Route 
-            path="/admin/users" 
-            element={userRole === 'ADMIN' ? <UserManagement /> : <Navigate to="/login" />} 
-          />
-          <Route 
-            path="/admin/create-user" 
-            element={userRole === 'ADMIN' ? <CreateUser /> : <Navigate to="/login" />} 
-          />
-          
+          <Route path="/admin">
+            <Route path="users">
+              <Route index element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <UserManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="create" element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <CreateUser />
+                </ProtectedRoute>
+              } />
+            </Route>
+          </Route>
+
           {/* Instructor Routes */}
-          <Route 
-            path="/lessons/create" 
-            element={userRole === 'INSTRUCTOR' ? <CreateLesson /> : <Navigate to="/login" />} 
-          />
-          <Route 
-            path="/assignments/create" 
-            element={userRole === 'INSTRUCTOR' ? <CreateAssignment /> : <Navigate to="/login" />} 
-          />
-          
-          {/* Student Dashboard */}
+          <Route path="/instructor">
+            <Route 
+              path="create-lesson" 
+              element={
+                <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                  <CreateLesson />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="create-assignment" 
+              element={
+                <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                  <CreateAssignment />
+                </ProtectedRoute>
+              } 
+            />
+          </Route>
+
+          {/* Student Routes */}
           <Route 
             path="/dashboard" 
-            element={userRole === 'STUDENT' ? <Dashboard /> : <Navigate to="/login" />} 
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
           />
-          
-          {/* Common Routes */}
-          <Route path="/lessons" element={<LessonList />} />
-          <Route path="/lessons/:id" element={<LessonDetail />} />
-          <Route path="/assignments" element={<AssignmentList />} />
-          <Route path="/assignments/:id" element={<AssignmentDetail />} />
-          
+
+          {/* Common Protected Routes */}
+          <Route 
+            path="/lessons" 
+            element={
+              <ProtectedRoute>
+                <LessonList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/lessons/:id" 
+            element={
+              <ProtectedRoute>
+                <LessonDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/assignments" 
+            element={
+              <ProtectedRoute>
+                <AssignmentList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/assignments/:id" 
+            element={
+              <ProtectedRoute>
+                <AssignmentDetail />
+              </ProtectedRoute>
+            } 
+          />
+
           {/* Default Route */}
           <Route path="/" element={
-            !userRole ? <Navigate to="/login" /> : 
-            userRole === 'STUDENT' ? <Navigate to="/dashboard" /> :
-            <Navigate to="/lessons" />
+            <Navigate to={
+              !userRole ? '/login' :
+              userRole === 'ADMIN' ? '/admin/users' :
+              userRole === 'STUDENT' ? '/dashboard' :
+              userRole === 'INSTRUCTOR' ? '/lessons' :
+              '/login'
+            } replace />
           } />
-        </Routes>
-      </div>
+        </Route>
+      </Routes>
     </Router>
   );
 }

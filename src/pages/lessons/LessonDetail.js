@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -10,23 +10,24 @@ function LessonDetail() {
   const [error, setError] = useState('');
   const userRole = localStorage.getItem('userRole');
 
-  useEffect(() => {
-    fetchLesson();
-  }, [id]);
-
-  const fetchLesson = async () => {
+  const fetchLesson = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/lessons/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`/api/lessons/${id}`);
       setLesson(response.data);
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch lesson');
       setLoading(false);
+      // Display error message if needed
+      if (error) {
+        console.error('Error fetching lesson:', error);
+      }
     }
-  };
+  }, [id, error]);
+
+  useEffect(() => {
+    fetchLesson();
+  }, [fetchLesson]);
 
   if (loading) return <div className="text-center mt-5">Loading...</div>;
   if (!lesson) return <div className="text-center mt-5">Lesson not found</div>;

@@ -11,28 +11,51 @@ function CreateUser() {
   });
   const [error, setError] = useState('');
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setError('No authentication token found. Please login again.');
+        navigate('/login');
+        return;
+      }
+
+      const response = await axios.post(
+        'http://localhost:5000/api/admin/users',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data.status === 'success') {
+        navigate('/admin/users');
+      }
+    } catch (err) {
+      console.error('Create user error:', err);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        setError('Session expired or unauthorized. Please login again.');
+        navigate('/login');
+      } else if (err.response?.status === 400) {
+        setError(err.response.data.message);
+      } else {
+        setError('Failed to create user. Please try again.');
+      }
+    }
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        'http://localhost:5000/api/admin/users',
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      navigate('/admin/users');
-    } catch (err) {
-      setError('Failed to create user');
-    }
   };
 
   return (
@@ -84,6 +107,7 @@ function CreateUser() {
                   >
                     <option value="STUDENT">Student</option>
                     <option value="INSTRUCTOR">Instructor</option>
+                    <option value="ADMIN">Admin</option>
                   </select>
                 </div>
 

@@ -86,7 +86,7 @@ function CreateLesson() {
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Time(optional)</label>
+              <label className="form-label">Lesson Time</label>
               <input
                 type="datetime-local"
                 className="form-control"

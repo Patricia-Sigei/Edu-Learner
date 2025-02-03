@@ -13,7 +13,7 @@ function AssignmentDetail() {
   const fetchAssignment = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/assignments/${id}`, {
+      const response = await axios.get(`http://127.0.0.1:8080/api/assignments/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAssignment(response.data);
@@ -35,7 +35,7 @@ function AssignmentDetail() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/api/student/assignments/${id}/submit`,
+        `http://127.0.0.1:8080/api/student/assignments/${id}/submit`,
         { submission },
         {
           headers: { Authorization: `Bearer ${token}` }

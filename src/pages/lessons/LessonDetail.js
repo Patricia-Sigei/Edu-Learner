@@ -12,7 +12,7 @@ function LessonDetail() {
 
   const fetchLesson = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/lessons/${id}`);
+      const response = await axios.get(`http://127.0.0.1:8080/api/lessons/${id}`);
       setLesson(response.data);
       setLoading(false);
     } catch (err) {

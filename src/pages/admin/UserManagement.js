@@ -17,7 +17,7 @@ function UserManagement() {
           return;
         }
 
-        const response = await axios.get('http://localhost:5000/api/admin/users', {
+        const response = await axios.get('http://127.0.0.1:8080/api/admin/users', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -45,7 +45,7 @@ function UserManagement() {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.delete(
-          `http://localhost:5000/api/admin/users/${userId}`,
+          `http://127.0.0.1:8080/api/admin/users/${userId}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`

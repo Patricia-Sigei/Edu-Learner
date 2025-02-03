@@ -24,7 +24,7 @@ function CreateLesson() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://localhost:5000/api/instructor/lessons',
+        'http://127.0.0.1:8080/api/instructor/lessons',
         formData,
         {
           headers: { Authorization: `Bearer ${token}` }

@@ -15,7 +15,7 @@ function AssignmentList() {
   const fetchAssignments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/assignments', {
+      const response = await axios.get('http://127.0.0.1:8080/api/assignments', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAssignments(response.data);

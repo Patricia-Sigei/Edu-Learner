@@ -15,7 +15,7 @@ function LessonList() {
   const fetchLessons = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/lessons', {
+      const response = await axios.get('http://127.0.0.1:8080/api/lessons', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLessons(response.data);
@@ -30,7 +30,7 @@ function LessonList() {
     if (window.confirm('Are you sure you want to delete this lesson?')) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:5000/api/instructor/lessons/${id}`, {
+        await axios.delete(`http://127.0.0.1:8080/api/instructor/lessons/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchLessons();

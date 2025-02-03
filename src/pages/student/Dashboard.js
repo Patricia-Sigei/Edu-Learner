@@ -5,7 +5,7 @@ import axios from 'axios';
 function Dashboard() {
   const [data, setData] = useState({
     recentLessons: [],
-    upcomingAssignments: []
+    upcomingAssignments: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,10 +20,13 @@ function Dashboard() {
       const response = await axios.get(
         'http://127.0.0.1:8080/api/student/dashboard',
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setData(response.data);
+      setData({
+        recentLessons: response.data.recentLessons || [],
+        upcomingAssignments: response.data.upcomingAssignments || [],
+      });
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch dashboard data');
@@ -44,18 +47,19 @@ function Dashboard() {
       )}
 
       <div className="row">
+        {/* Recent Lessons */}
         <div className="col-md-6 mb-4">
           <div className="card shadow h-100">
             <div className="card-header bg-primary text-white">
               <h5 className="card-title mb-0">Recent Lessons</h5>
             </div>
             <div className="card-body">
-              {data.recentLessons.length === 0 ? (
+              {data.recentLessons?.length === 0 ? (
                 <p className="text-muted">No recent lessons</p>
               ) : (
                 <div className="list-group">
-                  {data.recentLessons.map(lesson => (
-                    <Link 
+                  {data.recentLessons.map((lesson) => (
+                    <Link
                       key={lesson.id}
                       to={`/lessons/${lesson.id}`}
                       className="list-group-item list-group-item-action"
@@ -63,7 +67,9 @@ function Dashboard() {
                       <div className="d-flex justify-content-between align-items-center">
                         <h6 className="mb-1">{lesson.title}</h6>
                         <small className="text-muted">
-                          {new Date(lesson.created_at).toLocaleDateString()}
+                          {lesson.created_at
+                            ? new Date(lesson.created_at).toLocaleDateString()
+                            : 'Unknown Date'}
                         </small>
                       </div>
                     </Link>
@@ -74,30 +80,37 @@ function Dashboard() {
           </div>
         </div>
 
+        {/* Upcoming Assignments */}
         <div className="col-md-6 mb-4">
           <div className="card shadow h-100">
             <div className="card-header bg-warning">
               <h5 className="card-title mb-0">Upcoming Assignments</h5>
             </div>
             <div className="card-body">
-              {data.upcomingAssignments.length === 0 ? (
+              {data.upcomingAssignments?.length === 0 ? (
                 <p className="text-muted">No upcoming assignments</p>
               ) : (
                 <div className="list-group">
-                  {data.upcomingAssignments.map(assignment => (
-                    <Link 
+                  {data.upcomingAssignments.map((assignment) => (
+                    <Link
                       key={assignment.id}
                       to={`/assignments/${assignment.id}`}
                       className="list-group-item list-group-item-action"
                     >
                       <div className="d-flex justify-content-between align-items-center">
                         <h6 className="mb-1">{assignment.title}</h6>
-                        <small className={`text-${
-                          new Date(assignment.due_date) < new Date() 
-                            ? 'danger' 
-                            : 'warning'
-                        }`}>
-                          Due: {new Date(assignment.due_date).toLocaleDateString()}
+                        <small
+                          className={`text-${
+                            assignment.due_date &&
+                            new Date(assignment.due_date) < new Date()
+                              ? 'danger'
+                              : 'warning'
+                          }`}
+                        >
+                          Due:{' '}
+                          {assignment.due_date
+                            ? new Date(assignment.due_date).toLocaleDateString()
+                            : 'Unknown Date'}
                         </small>
                       </div>
                     </Link>

@@ -1,35 +1,62 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 function AssignmentList() {
+  // State to hold assignments, loading, and error messages
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const userRole = localStorage.getItem('userRole');
 
-  useEffect(() => {
-    fetchAssignments();
-  }, []);
-
-  const fetchAssignments = async () => {
+  // Function to fetch assignments from the API
+  const fetchAssignments = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8080/api/assignments', {
+      let endpoint = '';
+
+      // Set the API endpoint based on user role
+      if (userRole === 'INSTRUCTOR') {
+        endpoint = 'http://127.0.0.1:8080/api/instructor/assignments';
+      } else if (userRole === 'STUDENT') {
+        endpoint = 'http://127.0.0.1:8080/api/student/assignments';
+      } else if (userRole === 'ADMIN') {
+        endpoint = 'http://127.0.0.1:8080/api/admin/assignments';
+      }
+
+      // Make the API request
+      const response = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setAssignments(response.data);
+
+      // Set assignments and stop loading once the data is fetched
+      if (Array.isArray(response.data)) {
+        if (response.data.length === 0) {
+          setError('No assignments available');
+        }
+        setAssignments(response.data);
+      } else {
+        setError('Assignments data is not in the expected format');
+      }
       setLoading(false);
     } catch (err) {
+      // Handle any errors that occur during fetching
       setError('Failed to fetch assignments');
       setLoading(false);
     }
-  };
+  }, [userRole]);
 
+  // Fetch assignments on component mount
+  useEffect(() => {
+    fetchAssignments();
+  }, [fetchAssignments]);
+
+  // Display loading message while data is being fetched
   if (loading) return <div className="text-center mt-5">Loading...</div>;
 
   return (
     <div className="container mt-4">
+      {/* Header with the title and button to create assignment for instructors */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Assignments</h2>
         {userRole === 'INSTRUCTOR' && (
@@ -39,12 +66,14 @@ function AssignmentList() {
         )}
       </div>
 
+      {/* Display error message if there was an error fetching the data */}
       {error && (
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
       )}
 
+      {/* Render the list of assignments */}
       <div className="row">
         {assignments.map(assignment => (
           <div key={assignment.id} className="col-md-6 mb-4">

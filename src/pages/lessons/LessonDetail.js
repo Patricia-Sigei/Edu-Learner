@@ -12,24 +12,48 @@ function LessonDetail() {
 
   const fetchLesson = useCallback(async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8080/api/lessons/${id}`);
-      setLesson(response.data);
+      const token = localStorage.getItem('token');
+      let endpoint = '';
+
+      if (userRole === 'ADMIN') {
+        endpoint = `http://127.0.0.1:8080/api/admin/lessons/${id}`;
+      } else if (userRole === 'INSTRUCTOR') {
+        endpoint = `http://127.0.0.1:8080/api/instructor/lessons/${id}`;
+      } else if (userRole === 'STUDENT') {
+        endpoint = `http://127.0.0.1:8080/api/student/lessons/${id}`;
+      } else {
+        setError('Unauthorized access');
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log("API Response:", response.data);
+
+      // Handle response format: status and data
+      if (response.data.status === 'success' && response.data.data) {
+        setLesson(response.data.data);
+      } else {
+        setError('Lesson not found or invalid response');
+      }
+
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching lesson:', err);
       setError('Failed to fetch lesson');
       setLoading(false);
-      // Display error message if needed
-      if (error) {
-        console.error('Error fetching lesson:', error);
-      }
     }
-  }, [id, error]);
+  }, [id, userRole]);
 
   useEffect(() => {
     fetchLesson();
   }, [fetchLesson]);
 
   if (loading) return <div className="text-center mt-5">Loading...</div>;
+  if (error) return <div className="text-center mt-5 text-danger">{error}</div>;
   if (!lesson) return <div className="text-center mt-5">Lesson not found</div>;
 
   return (

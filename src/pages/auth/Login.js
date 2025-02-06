@@ -125,7 +125,7 @@ function Login() {
 
               <p className="mt-3 text-center">
                 <button className="btn btn-link" onClick={() => setShowResetModal(true)}>
-                New users? Reset Password.
+                New users or forgot Password? Reset Password.
                 </button>
               </p>
             </div>
